@@ -8,6 +8,7 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Date;
 
 /**
@@ -56,13 +57,18 @@ public class Transform {
         if (member != null){
             reserva.setPaquete(member.getAsString());
         }
+
         member = itemObject.get("fecha");
-        if (member != null){
-            Gson gson = new GsonBuilder()
-                    .setDateFormat("yyyy-MM-dd HH:mm:ss")
-                    .create();
+        Gson gson = new GsonBuilder()
+                .setDateFormat("yyyy-MM-dd HH:mm:ss")
+                .create();
+        if (member != null && !member.getAsString().isEmpty()){
             reserva.setFecha(gson.fromJson(member,Date.class));
+        }else{
+            Calendar cal = Calendar.getInstance();
+            reserva.setFecha(cal.getTime());
         }
+
         member = itemObject.get("nom_proveedor");
         if (member != null) {
             reserva.setNom_proveedor(member.getAsString());

@@ -49,8 +49,8 @@ public class LoginActivity extends Activity {
                         .addConverterFactory(GsonConverterFactory.create())
                         .build();
                 LoginInterface service = retrofit.create(LoginInterface.class);
-                //TODO Remove hardcoded user and user edittexts
-                Call<JsonElement> call = service.login(new Login("dcoellar@gmail.com", "PVISIG"));
+
+                Call<JsonElement> call = service.login(new Login(email.getText().toString(), password.getText().toString()));//"PVISIG"
                 call.enqueue(new Callback<JsonElement>() {
                     @Override
                     public void onResponse(Response<JsonElement> response, Retrofit retrofit) {

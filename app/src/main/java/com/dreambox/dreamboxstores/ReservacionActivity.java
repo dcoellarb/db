@@ -3,6 +3,7 @@ package com.dreambox.dreamboxstores;
 import android.app.Activity;
 import android.app.DatePickerDialog;
 import android.app.TimePickerDialog;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
@@ -24,6 +25,7 @@ import com.dreambox.dreamboxstores.Utils.Utils;
 import com.dreambox.dreamboxstores.Views.DatePickerFragment;
 import com.dreambox.dreamboxstores.Views.TimePickerFragment;
 import com.google.gson.Gson;
+import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 
@@ -98,30 +100,43 @@ public class ReservacionActivity extends AppCompatActivity{
                     call.enqueue(new Callback<JsonElement>() {
                         @Override
                         public void onResponse(Response<JsonElement> response, Retrofit retrofit) {
-                            JsonElement errors = response.body().getAsJsonObject().get("error");
-                            if (errors != null) {
-                                Utils.validateRestErrors(activity, errors, true, "", TOAST_MESSAGE);
-                            } else {
-                                JsonElement datos = response.body().getAsJsonObject().get("datos");
-                                if (datos != null) {
-                                    JsonObject datosObject = datos.getAsJsonObject();
-                                    if (datosObject != null) {
+                            try {
+                                JsonElement errors = response.body().getAsJsonObject().get("error");
+                                if (errors != null) {
+                                    Utils.validateRestErrors(activity, errors, true, "", TOAST_MESSAGE);
+                                } else {
+                                    JsonElement datos = response.body().getAsJsonObject().get("datos");
+                                    if (datos != null) {
+                                        JsonArray datosArray = datos.getAsJsonArray();
+                                        if (datosArray != null) {
+                                            if (datosArray.size() > 0) {
+                                                JsonObject datosObject = datosArray.get(0).getAsJsonObject();
+                                                if (datosObject != null) {
+                                                    reservacion = Transform.transformResponseObject(datosObject);
+                                                    LoadReservacion(reservacion);
 
-                                        reservacion = Transform.transformResponseObject(datosObject);
+                                                    codeText.setEnabled(false);
+                                                    view.setEnabled(false);
 
-                                        codeText.setEnabled(false);
-                                        view.setEnabled(false);
-
-                                        reservaContainer.setVisibility(View.VISIBLE);
-                                        Animation animation = AnimationUtils.loadAnimation(getApplicationContext(), R.anim.push_up_in);
-                                        reservaContainer.setAnimation(animation);
-                                        animation.start();
+                                                    reservaContainer.setVisibility(View.VISIBLE);
+                                                    Animation animation = AnimationUtils.loadAnimation(getApplicationContext(), R.anim.push_up_in);
+                                                    reservaContainer.setAnimation(animation);
+                                                    animation.start();
+                                                } else {
+                                                    showValidateError();
+                                                }
+                                            } else {
+                                                showValidateError();
+                                            }
+                                        } else {
+                                        }
                                     } else {
                                         showValidateError();
                                     }
-                                } else {
-                                    showValidateError();
                                 }
+                            } catch(Exception e) {
+                                Log.e("ERROR",e.getMessage());
+                                showValidateError();
                             }
                         }
 
@@ -186,6 +201,7 @@ public class ReservacionActivity extends AppCompatActivity{
         findViewById(R.id.reserva_actualizat).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+                reservacion.setId_estado("5");
                 Retrofit retrofit = new Retrofit.Builder()
                         .baseUrl(BASE_URL)
                         .addConverterFactory(GsonConverterFactory.create())
@@ -202,14 +218,11 @@ public class ReservacionActivity extends AppCompatActivity{
                         if (errors != null) {
                             Utils.validateRestErrors(activity, errors, true, "", TOAST_MESSAGE_ACTUALIZAR);
                         } else {
-                            JsonElement respuesta = response.body().getAsJsonObject().get("respuesta");
+                            JsonElement respuesta = response.body().getAsJsonObject().get("exito");
                             if (respuesta != null) {
-                                String respuesta_value = respuesta.getAsString();
-                                if (respuesta_value != null && respuesta_value.equalsIgnoreCase("exito")){
-                                    activity.finish();
-                                }else{
-                                    showActualizarError();
-                                }
+                                Intent intent = new Intent(activity, ReservacionesListActivity.class);
+                                intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+                                startActivity(intent);
                             } else {
                                 showActualizarError();
                             }
@@ -280,18 +293,18 @@ public class ReservacionActivity extends AppCompatActivity{
     }
 
     class ValidarReserva {
-        private String codigo;
+        private String cod_reserva;
 
-        public ValidarReserva(String codigo) {
-            this.codigo = codigo;
+        public ValidarReserva(String cod_reserva) {
+            this.cod_reserva = cod_reserva;
         }
 
-        public String getCodigo() {
-            return codigo;
+        public String getCod_reserva() {
+            return cod_reserva;
         }
 
-        public void setCodigo(String codigo) {
-            this.codigo = codigo;
+        public void setCod_reserva(String codigo) {
+            this.cod_reserva = cod_reserva;
         }
     }
 
@@ -308,7 +321,7 @@ public class ReservacionActivity extends AppCompatActivity{
             cal.setTime(reservacion.getFecha());
 
             String month = String.valueOf(cal.get(Calendar.MONTH) + 1);
-            if (cal.get(Calendar.MONTH) < 10){
+            if (cal.get(Calendar.MONTH) + 1 < 10){
                 month = "0" + String.valueOf(cal.get(Calendar.MONTH) + 1);
             }
 
