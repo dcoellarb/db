@@ -12,9 +12,11 @@ import android.view.Gravity;
 import android.view.View;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
+import android.widget.CompoundButton;
 import android.widget.DatePicker;
 import android.widget.EditText;
 import android.widget.LinearLayout;
+import android.widget.Switch;
 import android.widget.TextView;
 import android.widget.TimePicker;
 import android.widget.Toast;
@@ -60,6 +62,8 @@ public class ReservacionActivity extends AppCompatActivity{
     private String token;
     private TextView reservacionTime;
     private TextView reservacionDate;
+    private Switch reserva_completada;
+    private Switch reserva_cancelada;
     private int reservation_year;
     private int reservation_month;
     private int reservation_day;
@@ -113,6 +117,7 @@ public class ReservacionActivity extends AppCompatActivity{
                                                 JsonObject datosObject = datosArray.get(0).getAsJsonObject();
                                                 if (datosObject != null) {
                                                     reservacion = Transform.transformResponseObject(datosObject);
+                                                    reservacion.setId_estado("5");
                                                     LoadReservacion(reservacion);
 
                                                     codeText.setEnabled(false);
@@ -198,10 +203,40 @@ public class ReservacionActivity extends AppCompatActivity{
             }
         });
 
+        reserva_completada = ((Switch)findViewById(R.id.reserva_completada));
+        reserva_completada.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(CompoundButton compoundButton, boolean b) {
+                if (b) {
+                    reservacion.setId_estado("8");
+                } else {
+                    reservacion.setId_estado("5");
+                }
+            }
+        });
+
+        reserva_cancelada = ((Switch)findViewById(R.id.reserva_cancelada));
+        reserva_cancelada.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+                    @Override
+                    public void onCheckedChanged(CompoundButton compoundButton, boolean b) {
+                        if (b) {
+                            reserva_completada.setEnabled(false);
+                            reservacion.setId_estado("6");
+                        } else {
+                            reserva_completada.setEnabled(true);
+                            if (reserva_completada.isChecked()) {
+                                reservacion.setId_estado("8");
+                            } else {
+                                reservacion.setId_estado("5");
+                            }
+                        }
+                    }
+        });
+
+
         findViewById(R.id.reserva_actualizat).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                reservacion.setId_estado("5");
                 Retrofit retrofit = new Retrofit.Builder()
                         .baseUrl(BASE_URL)
                         .addConverterFactory(GsonConverterFactory.create())
@@ -258,6 +293,20 @@ public class ReservacionActivity extends AppCompatActivity{
         cliente.setText(reservacion.getCliente());
         TextView descripcion = (TextView)findViewById(R.id.reserva_descripcion);
         descripcion.setText(reservacion.getPaquete());
+
+        if (reservacion.getId_estado().equalsIgnoreCase("5")){
+            reserva_completada.setChecked(false);
+            reserva_completada.setEnabled(true);
+            reserva_cancelada.setChecked(false);
+        }else if (reservacion.getId_estado().equalsIgnoreCase("6")){
+            reserva_completada.setChecked(false);
+            reserva_completada.setEnabled(false);
+            reserva_cancelada.setChecked(true);
+        }else if (reservacion.getId_estado().equalsIgnoreCase("8")){
+            reserva_completada.setChecked(true);
+            reserva_completada.setEnabled(true);
+            reserva_cancelada.setChecked(false);
+        }
 
         Calendar cal = Calendar.getInstance();
         cal.setTime(reservacion.getFecha());

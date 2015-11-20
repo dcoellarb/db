@@ -77,15 +77,13 @@ public class ReservacionesListActivity extends AppCompatActivity {
         listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
-                if (estadoId == "5"){
-                    Intent intent = new Intent(activity, ReservacionActivity.class);
-                    intent.putExtra("mode","update");
+                Intent intent = new Intent(activity, ReservacionActivity.class);
+                intent.putExtra("mode","update");
 
-                    Gson gson = new Gson();
-                    intent.putExtra("reserva", gson.toJson(list.get(i)));
+                Gson gson = new Gson();
+                intent.putExtra("reserva", gson.toJson(list.get(i)));
 
-                    startActivity(intent);
-                }
+                startActivity(intent);
             }
         });
 
@@ -124,10 +122,10 @@ public class ReservacionesListActivity extends AppCompatActivity {
         findViewById(R.id.reservaciones_confirmadas).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                if (estadoId != "6"){
+                if (estadoId != "8"){
                     ((ViewGroup)view).getChildAt(0).setVisibility(View.VISIBLE);
                     selectedEstado.getChildAt(0).setVisibility(View.INVISIBLE);
-                    estadoId = "6";
+                    estadoId = "8";
                     LoadReservas();
                     selectedEstado = (ViewGroup)view;
                 }
@@ -137,10 +135,10 @@ public class ReservacionesListActivity extends AppCompatActivity {
         findViewById(R.id.reservaciones_canceladas).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                if (estadoId != "8"){
+                if (estadoId != "6"){
                     ((ViewGroup)view).getChildAt(0).setVisibility(View.VISIBLE);
                     selectedEstado.getChildAt(0).setVisibility(View.INVISIBLE);
-                    estadoId = "8";
+                    estadoId = "6";
                     LoadReservas();
                     selectedEstado = (ViewGroup)view;
                 }
